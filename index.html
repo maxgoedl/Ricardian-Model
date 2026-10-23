@@ -29,6 +29,14 @@
   h2 { font-size: 1.2rem; margin: 32px 0 8px; }
   h3 { font-size: 1rem; margin: 0 0 8px; }
   p.lead { color: var(--ink-2); margin: 0 0 16px; }
+  .section-head { display: flex; align-items: baseline; gap: 16px; margin: 32px 0 8px; }
+  .section-head h2 { margin: 0; }
+  button {
+    font: inherit; font-size: 0.9rem; color: var(--ink); background: var(--surface); cursor: pointer;
+    border: 1px solid var(--line); border-radius: 6px; padding: 4px 12px;
+  }
+  button:hover { border-color: var(--ink-2); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
   label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0; }
@@ -81,7 +89,7 @@
   <p class="lead">Two countries (Home and Foreign), two goods (cheese and wine), labor is the only input.
     Change any number below and the results update immediately.</p>
 
-  <h2>Inputs</h2>
+  <div class="section-head"><h2>Inputs</h2><button id="reset" type="button">Reset to defaults</button></div>
   <div class="grid">
     <div class="card">
       <h3>Home</h3>
@@ -429,6 +437,11 @@
   }
 
   ids.forEach(function (id) { $(id).addEventListener("input", render); });
+  // Reset: restore every input to the value written in the HTML.
+  $("reset").addEventListener("click", function () {
+    ids.concat(["muC", "muW"]).forEach(function (id) { $(id).value = $(id).defaultValue; });
+    render();
+  });
   ["muC", "muW"].forEach(function (id) {
     $(id).addEventListener("input", function () { syncMu(id); render(); });
   });
