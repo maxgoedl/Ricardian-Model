@@ -193,33 +193,33 @@
 
     // ---- Autarky table
     $("tAut").innerHTML = head + "<tbody>" +
-      row("Relative price of cheese, p = a<sub>LC</sub>/a<sub>LW</sub>", f(aH.p), f(aF.p)) +
-      row("Labor in cheese, μ<sub>C</sub>·L", f(aH.LC), f(aF.LC), "sep") +
-      row("Labor in wine, μ<sub>W</sub>·L", f(aH.LW), f(aF.LW)) +
-      row("Cheese production = consumption", f(aH.QC), f(aF.QC), "sep") +
-      row("Wine production = consumption", f(aH.QW), f(aF.QW)) +
-      row("Wage (in wine), w = 1/a<sub>LW</sub>", f(aH.wage), f(aF.wage), "sep") +
-      row("Utility, U = C<sup>μ<sub>C</sub></sup>W<sup>μ<sub>W</sub></sup>", f(aH.U), f(aF.U)) +
+      row("Relative price of cheese", f(aH.p), f(aF.p)) +
+      row("Labor in cheese", f(aH.LC), f(aF.LC), "sep") +
+      row("Labor in wine", f(aH.LW), f(aF.LW)) +
+      row("Cheese production", f(aH.QC), f(aF.QC), "sep") +
+      row("Wine production", f(aH.QW), f(aF.QW)) +
+      row("Cheese consumption", f(aH.C), f(aF.C), "sep") +
+      row("Wine consumption", f(aH.W), f(aF.W)) +
+      row("Wage", f(aH.wage), f(aF.wage), "sep") +
+      row("Utility", f(aH.U), f(aF.U)) +
       "</tbody>";
 
     // ---- Free-trade table
     var gH = (t.home.U / aH.U - 1) * 100, gF = (t.foreign.U / aF.U - 1) * 100;
     var pct = function (g) { return Math.abs(g) < 1e-7 ? "0%" : "+" + g.toLocaleString("en-US", { maximumFractionDigits: 1 }) + "%"; };
     $("tTrade").innerHTML = head + "<tbody>" +
-      row("World relative price of cheese, p", f(t.p), f(t.p)) +
+      row("Relative price of cheese", f(t.p), f(t.p)) +
       row("Labor in cheese", f(t.home.LC), f(t.foreign.LC), "sep") +
       row("Labor in wine", f(t.home.LW), f(t.foreign.LW)) +
       row("Cheese production", f(t.home.QC), f(t.foreign.QC), "sep") +
       row("Wine production", f(t.home.QW), f(t.foreign.QW)) +
-      row("Income = p·Q<sub>C</sub> + Q<sub>W</sub>", f(t.home.income), f(t.foreign.income), "sep") +
-      row("Cheese consumption = μ<sub>C</sub>·Income / p", f(t.home.C), f(t.foreign.C)) +
-      row("Wine consumption = μ<sub>W</sub>·Income", f(t.home.W), f(t.foreign.W)) +
-      row("Cheese trade (production − consumption)", flow(t.home.netExportsC), flow(t.foreign.netExportsC), "sep") +
-      row("Wine trade (production − consumption)", flow(t.home.netExportsW), flow(t.foreign.netExportsW)) +
-      row("Wage (in wine)", f(t.home.wage), f(t.foreign.wage), "sep") +
-      row("Relative wage, w/w*", f(t.relWage), "") +
-      row("Utility", f(t.home.U), f(t.foreign.U), "sep") +
-      row("Gain vs. autarky", pct(gH), pct(gF)) +
+      row("Cheese consumption", f(t.home.C), f(t.foreign.C), "sep") +
+      row("Wine consumption", f(t.home.W), f(t.foreign.W)) +
+      row("Cheese trade", flow(t.home.netExportsC), flow(t.foreign.netExportsC), "sep") +
+      row("Wine trade", flow(t.home.netExportsW), flow(t.foreign.netExportsW)) +
+      row("Wage", f(t.home.wage), f(t.foreign.wage), "sep") +
+      row("Utility", f(t.home.U), f(t.foreign.U)) +
+      row("Gain from trade", pct(gH), pct(gF)) +
       "</tbody>";
 
     // ---- Plain-language summary of the case
