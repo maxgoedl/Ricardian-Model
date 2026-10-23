@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ricardian Model</title>
+<style>
+  :root {
+    --bg: #fcfcfb; --surface: #ffffff; --ink: #1f1f1d; --ink-2: #5d5c56; --line: #dcdbd5;
+    --accent: #2a78d6; --rd: #eb6834; --err: #c0262d; --err-bg: #fdecec; --note-bg: #f2f6fc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1a19; --surface: #232322; --ink: #f0efec; --ink-2: #c3c2b7; --line: #3d3d3a;
+      --accent: #3987e5; --rd: #d95926; --err: #ff7b7b; --err-bg: #3a1f1f; --note-bg: #1f2a38;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1a19; --surface: #232322; --ink: #f0efec; --ink-2: #c3c2b7; --line: #3d3d3a;
+    --accent: #3987e5; --rd: #d95926; --err: #ff7b7b; --err-bg: #3a1f1f; --note-bg: #1f2a38;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.2rem; margin: 32px 0 8px; }
+  h3 { font-size: 1rem; margin: 0 0 8px; }
+  p.lead { color: var(--ink-2); margin: 0 0 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0; }
+  input {
+    width: 110px; padding: 4px 8px; font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 6px; text-align: right;
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  input.bad { border-color: var(--err); background: var(--err-bg); }
+  .hint { font-size: 0.85rem; color: var(--ink-2); margin: 6px 0 0; }
+  #errors { color: var(--err); background: var(--err-bg); border-radius: 6px; padding: 8px 12px; margin-top: 12px; }
+  #errors:empty { display: none; }
+  .stale { opacity: 0.35; pointer-events: none; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; background: var(--surface); font-variant-numeric: tabular-nums; }
+  th, td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; white-space: normal; }
+  thead th { font-weight: 600; border-bottom: 2px solid var(--line); }
+  tr.sep td { border-top: 2px solid var(--line); }
+  .note { background: var(--note-bg); border-radius: 6px; padding: 10px 12px; margin: 10px 0; }
+  .muted { color: var(--ink-2); }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; font-weight: 600; }
+  .steps { padding-left: 1.2em; }
+  .steps li { margin: 6px 0; }
+  svg { display: block; width: 100%; height: auto; max-width: 640px; }
+  svg text { fill: var(--ink-2); font-size: 12px; }
+  svg .axis { stroke: var(--ink-2); stroke-width: 1; }
+  svg .guide { stroke: var(--line); stroke-dasharray: 4 4; }
+  svg .rs { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+  svg .rd { stroke: var(--rd); stroke-width: 2.5; fill: none; }
+  svg .eq { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
+  @media (max-width: 600px) {
+    th, td { padding: 6px 6px; font-size: 14px; white-space: normal; }
+    svg text { font-size: 14px; }
+  }
+  footer { margin-top: 40px; font-size: 0.85rem; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ricardian Model</h1>
+  <p class="lead">Two countries (Home and Foreign), two goods (cheese and wine), labor is the only input.
+    Change any number below and the results update immediately.</p>
+
+  <h2>Inputs</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Home</h3>
+      <label><span>Labor per unit of cheese, a<sub>LC</sub></span> <input id="aLC" type="number" step="any" min="0" value="1"></label>
+      <label><span>Labor per unit of wine, a<sub>LW</sub></span> <input id="aLW" type="number" step="any" min="0" value="2"></label>
+      <label><span>Labor endowment, L</span> <input id="L" type="number" step="any" min="0" value="1000"></label>
+    </div>
+    <div class="card">
+      <h3>Foreign</h3>
+      <label><span>Labor per unit of cheese, a*<sub>LC</sub></span> <input id="aLCs" type="number" step="any" min="0" value="6"></label>
+      <label><span>Labor per unit of wine, a*<sub>LW</sub></span> <input id="aLWs" type="number" step="any" min="0" value="3"></label>
+      <label><span>Labor endowment, L*</span> <input id="Ls" type="number" step="any" min="0" value="1000"></label>
+    </div>
+    <div class="card">
+      <h3>Preferences (both countries)</h3>
+      <label><span>Cheese weight, μ<sub>C</sub></span> <input id="muC" type="number" step="0.05" min="0" max="1" value="0.5"></label>
+      <label><span>Wine weight, μ<sub>W</sub></span> <input id="muW" type="number" step="0.05" min="0" max="1" value="0.5"></label>
+      <p class="hint">U = C<sup>μ<sub>C</sub></sup> W<sup>μ<sub>W</sub></sup>. The weights must sum to 1: editing one sets the other. Each is also the share of income spent on that good.</p>
+    </div>
+  </div>
+  <div id="errors" role="alert"></div>
+
+  <div id="results">
+    <p class="note muted">Wine is the numeraire: P<sub>W</sub> = 1, so the relative price p = P<sub>C</sub>/P<sub>W</sub> is the price of cheese in units of wine, and incomes and wages are measured in wine.</p>
+
+    <h2>Autarky</h2>
+    <div class="table-wrap"><table id="tAut"></table></div>
+
+    <h2>Free trade</h2>
+    <div id="tradeNote" class="note"></div>
+    <div class="table-wrap"><table id="tTrade"></table></div>
+
+    <h2>World relative supply and demand</h2>
+    <div id="chart"></div>
+    <p class="hint">Blue: world relative supply (RS). Orange: world relative demand (RD), (Q<sub>C</sub>/Q<sub>W</sub>) = (μ<sub>C</sub>/μ<sub>W</sub>) / p.
+      Dashed lines mark the two autarky prices. The dot is the free-trade equilibrium.</p>
+
+    <details>
+      <summary>How the free-trade equilibrium is computed</summary>
+      <ol class="steps" id="steps"></ol>
+    </details>
+  </div>
+
+  <footer>Notation follows Krugman, Obstfeld &amp; Melitz, <i>International Economics</i>, ch. 3.
+    Default numbers are the textbook example.</footer>
+</main>
+
+<script src="ricardo.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var ids = ["aLC", "aLW", "L", "aLCs", "aLWs", "Ls"];
+  var names = {
+    aLC: "a_LC", aLW: "a_LW", L: "L", aLCs: "a*_LC", aLWs: "a*_LW", Ls: "L*"
+  };
+
+  // Numbers: at most 4 decimals, no trailing zeros, thousands separators.
+  function f(x) {
+    if (Math.abs(x) < 1e-9) x = 0;
+    return x.toLocaleString("en-US", { maximumFractionDigits: 4 });
+  }
+  // Signed trade flow: "+333.33 (export)" / "−333.33 (import)".
+  function flow(x) {
+    if (Math.abs(x) < 1e-9) return "0";
+    return x > 0 ? f(x) + " exported" : f(-x) + " imported";
+  }
+
+  function readPositive(id, errs) {
+    var el = $(id), v = Number(el.value);
+    var ok = el.value.trim() !== "" && isFinite(v) && v > 0;
+    el.classList.toggle("bad", !ok);
+    if (!ok) errs.push(names[id] + " must be a strictly positive number.");
+    return v;
+  }
+
+  // Keep μ_C + μ_W = 1: whichever box was edited drives the other.
+  function syncMu(sourceId) {
+    var src = $(sourceId), other = $(sourceId === "muC" ? "muW" : "muC");
+    var v = Number(src.value);
+    if (src.value.trim() !== "" && isFinite(v) && v > 0 && v < 1) {
+      other.value = Number((1 - v).toFixed(10));
+    }
+  }
+
+  function readMu(errs) {
+    var c = $("muC"), w = $("muW");
+    var vc = Number(c.value), vw = Number(w.value);
+    var okC = c.value.trim() !== "" && isFinite(vc) && vc > 0 && vc < 1;
+    var okW = w.value.trim() !== "" && isFinite(vw) && vw > 0 && vw < 1;
+    c.classList.toggle("bad", !okC);
+    w.classList.toggle("bad", !okW);
+    if (!okC || !okW) errs.push("μ_C and μ_W must each be strictly between 0 and 1.");
+    else if (Math.abs(vc + vw - 1) > 1e-9) errs.push("μ_C and μ_W must sum to 1.");
+    return vc;
+  }
+
+  function row(label, h, fo, cls) {
+    return "<tr" + (cls ? ' class="' + cls + '"' : "") + "><td>" + label + "</td><td>" + h + "</td><td>" + fo + "</td></tr>";
+  }
+  var head = "<thead><tr><th></th><th>Home</th><th>Foreign</th></tr></thead>";
+
+  function render() {
+    var errs = [];
+    var v = {};
+    ids.forEach(function (id) { v[id] = readPositive(id, errs); });
+    var muC = readMu(errs);
+    $("errors").innerHTML = errs.map(function (e) { return "<div>" + e + "</div>"; }).join("");
+    $("results").classList.toggle("stale", errs.length > 0);
+    if (errs.length) return;
+
+    var H = { aLC: v.aLC, aLW: v.aLW, L: v.L };
+    var F = { aLC: v.aLCs, aLW: v.aLWs, L: v.Ls };
+    var aH = Ricardo.autarky(H, muC), aF = Ricardo.autarky(F, muC);
+    var t = Ricardo.freeTrade(H, F, muC);
+
+    // ---- Autarky table
+    $("tAut").innerHTML = head + "<tbody>" +
+      row("Relative price of cheese, p = a<sub>LC</sub>/a<sub>LW</sub>", f(aH.p), f(aF.p)) +
+      row("Labor in cheese, μ<sub>C</sub>·L", f(aH.LC), f(aF.LC), "sep") +
+      row("Labor in wine, μ<sub>W</sub>·L", f(aH.LW), f(aF.LW)) +
+      row("Cheese production = consumption", f(aH.QC), f(aF.QC), "sep") +
+      row("Wine production = consumption", f(aH.QW), f(aF.QW)) +
+      row("Wage (in wine), w = 1/a<sub>LW</sub>", f(aH.wage), f(aF.wage), "sep") +
+      row("Utility, U = C<sup>μ<sub>C</sub></sup>W<sup>μ<sub>W</sub></sup>", f(aH.U), f(aF.U)) +
+      "</tbody>";
+
+    // ---- Free-trade table
+    var gH = (t.home.U / aH.U - 1) * 100, gF = (t.foreign.U / aF.U - 1) * 100;
+    var pct = function (g) { return Math.abs(g) < 1e-7 ? "0%" : "+" + g.toLocaleString("en-US", { maximumFractionDigits: 1 }) + "%"; };
+    $("tTrade").innerHTML = head + "<tbody>" +
+      row("World relative price of cheese, p", f(t.p), f(t.p)) +
+      row("Labor in cheese", f(t.home.LC), f(t.foreign.LC), "sep") +
+      row("Labor in wine", f(t.home.LW), f(t.foreign.LW)) +
+      row("Cheese production", f(t.home.QC), f(t.foreign.QC), "sep") +
+      row("Wine production", f(t.home.QW), f(t.foreign.QW)) +
+      row("Income = p·Q<sub>C</sub> + Q<sub>W</sub>", f(t.home.income), f(t.foreign.income), "sep") +
+      row("Cheese consumption = μ<sub>C</sub>·Income / p", f(t.home.C), f(t.foreign.C)) +
+      row("Wine consumption = μ<sub>W</sub>·Income", f(t.home.W), f(t.foreign.W)) +
+      row("Cheese trade (production − consumption)", flow(t.home.netExportsC), flow(t.foreign.netExportsC), "sep") +
+      row("Wine trade (production − consumption)", flow(t.home.netExportsW), flow(t.foreign.netExportsW)) +
+      row("Wage (in wine)", f(t.home.wage), f(t.foreign.wage), "sep") +
+      row("Relative wage, w/w*", f(t.relWage), "") +
+      row("Utility", f(t.home.U), f(t.foreign.U), "sep") +
+      row("Gain vs. autarky", pct(gH), pct(gF)) +
+      "</tbody>";
+
+    // ---- Plain-language summary of the case
+    var note;
+    if (t.kase === "equal") {
+      note = "Both countries have the same relative cost of cheese (" + f(t.pH) + "), so neither has a comparative advantage. " +
+        "The world price equals the common autarky price, there are no gains from trade, and the production pattern is not pinned down " +
+        "(the table shows each country keeping its autarky production, with no trade).";
+    } else {
+      var xName = t.homeIsX ? "Home" : "Foreign", yName = t.homeIsX ? "Foreign" : "Home";
+      note = "<b>" + xName + "</b> has the comparative advantage in <b>cheese</b> (relative cost " + f(Math.min(t.pH, t.pF)) +
+        " &lt; " + f(Math.max(t.pH, t.pF)) + "), so it exports cheese and imports wine; <b>" + yName + "</b> exports wine. ";
+      if (t.kase === "complete") {
+        note += "Both countries specialize completely, and the world price lies between the two autarky prices.";
+      } else {
+        var div = t.kase === "X-diversifies" ? xName : yName;
+        note += "Demand is such that complete specialization is not possible: <b>" + div + "</b> keeps producing both goods, " +
+          "so the world price equals " + div + "'s autarky price and " + div + " gains nothing from trade.";
+      }
+    }
+    $("tradeNote").innerHTML = note;
+
+    drawChart(t, muC, H, F);
+    writeSteps(H, F, muC, t);
+  }
+
+  // ---- Step-by-step derivation for the current numbers
+  function writeSteps(H, F, muC, t) {
+    var muW = 1 - muC, s = [];
+    s.push("Autarky prices: Home p = a<sub>LC</sub>/a<sub>LW</sub> = " + f(H.aLC) + "/" + f(H.aLW) + " = " + f(t.pH) +
+      "; Foreign p* = a*<sub>LC</sub>/a*<sub>LW</sub> = " + f(F.aLC) + "/" + f(F.aLW) + " = " + f(t.pF) + ".");
+    if (t.kase === "equal") {
+      s.push("The autarky prices are equal, so the world relative supply curve is flat at p = " + f(t.p) + " and that is the world price.");
+    } else {
+      var X = t.homeIsX ? H : F, Y = t.homeIsX ? F : H;
+      var xn = t.homeIsX ? "Home" : "Foreign", yn = t.homeIsX ? "Foreign" : "Home";
+      var xs = t.homeIsX ? "" : "*", ys = t.homeIsX ? "*" : "";
+      s.push("The world price must lie between the two autarky prices: " + f(Math.min(t.pH, t.pF)) + " ≤ p ≤ " + f(Math.max(t.pH, t.pF)) + ".");
+      s.push("Suppose both specialize: " + xn + " makes only cheese, L" + xs + "/a" + xs + "<sub>LC</sub> = " + f(X.L / X.aLC) +
+        "; " + yn + " makes only wine, L" + ys + "/a" + ys + "<sub>LW</sub> = " + f(Y.L / Y.aLW) + ".");
+      s.push("Cobb-Douglas demand: the world spends μ<sub>C</sub>/μ<sub>W</sub> times as much on cheese as on wine, so " +
+        "p · " + f(X.L / X.aLC) + " = (" + f(muC) + "/" + f(muW) + ") · " + f(Y.L / Y.aLW) + ", which gives p = " + f(t.pStar) + ".");
+      if (t.kase === "complete") {
+        s.push("This lies between the autarky prices, so complete specialization is the equilibrium: p = " + f(t.p) + ".");
+      } else if (t.kase === "X-diversifies") {
+        s.push(f(t.pStar) + " is below " + xn + "'s autarky price " + f(t.p) + ". At such a price " + xn +
+          " would not make cheese, so the price settles at " + f(t.p) + " and " + xn + " produces both goods.");
+        s.push("All cheese comes from " + xn + ": world income = " + xn + "'s income L" + xs + "/a" + xs + "<sub>LW</sub> + " + yn + "'s wine = " +
+          f(X.L / X.aLW + Y.L / Y.aLW) + ". Cheese output = μ<sub>C</sub> · world income / p = " + f((t.homeIsX ? t.home : t.foreign).QC) +
+          "; the remaining labor makes wine.");
+      } else {
+        s.push(f(t.pStar) + " is above " + yn + "'s autarky price " + f(t.p) + ". At such a price " + yn +
+          " would make only cheese too, so the price settles at " + f(t.p) + " and " + yn + " produces both goods.");
+        s.push("All wine comes from " + yn + ": world income = p · " + xn + "'s cheese + " + yn + "'s income L" + ys + "/a" + ys + "<sub>LW</sub> = " +
+          f(t.p * X.L / X.aLC + Y.L / Y.aLW) + ". Wine output = μ<sub>W</sub> · world income = " + f((t.homeIsX ? t.foreign : t.home).QW) +
+          "; the remaining labor makes cheese.");
+      }
+    }
+    s.push("Each country's income is the value of what it produces, p·Q<sub>C</sub> + Q<sub>W</sub>. It spends μ<sub>C</sub> of income on cheese and μ<sub>W</sub> on wine; " +
+      "exports are production minus consumption. Trade is balanced: p · (cheese exports) = wine imports.");
+    $("steps").innerHTML = s.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+  }
+
+  // ---- RS / RD diagram (inline SVG)
+  function drawChart(t, muC, H, F) {
+    var W = 640, Hh = 400, m = { l: 56, r: 24, t: 16, b: 48 };
+    var iw = W - m.l - m.r, ih = Hh - m.t - m.b;
+    var k = muC / (1 - muC);
+    var lo = Math.min(t.pH, t.pF), hi = Math.max(t.pH, t.pF);
+    var xEq = t.worldQC / t.worldQW;
+    var spec = null;
+    if (t.kase !== "equal") {
+      // RS on its vertical segment: cheese exporter's full cheese output / wine exporter's full wine output
+      var X = t.homeIsX ? H : F, Y = t.homeIsX ? F : H;
+      spec = (X.L / X.aLC) / (Y.L / Y.aLW);
+    }
+    var xMax = 1.6 * Math.max(xEq, spec || 0, 1e-9);
+    var yMax = 1.4 * Math.max(hi, t.p);
+    var sx = function (x) { return m.l + iw * Math.min(x, xMax) / xMax; };
+    var sy = function (y) { return m.t + ih * (1 - Math.min(y, yMax) / yMax); };
+
+    var o = [];
+    o.push('<svg viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="World relative supply and demand for cheese">');
+    // autarky price guides
+    [t.pH, t.pF].forEach(function (p, i) {
+      o.push('<line class="guide" x1="' + m.l + '" x2="' + (m.l + iw) + '" y1="' + sy(p) + '" y2="' + sy(p) + '"/>');
+    });
+    // axes
+    o.push('<line class="axis" x1="' + m.l + '" y1="' + m.t + '" x2="' + m.l + '" y2="' + (m.t + ih) + '"/>');
+    o.push('<line class="axis" x1="' + m.l + '" y1="' + (m.t + ih) + '" x2="' + (m.l + iw) + '" y2="' + (m.t + ih) + '"/>');
+    o.push('<text x="' + (m.l + iw) + '" y="' + (Hh - 10) + '" text-anchor="end">World relative quantity of cheese, (Q<tspan baseline-shift="sub" font-size="9">C</tspan> + Q*<tspan baseline-shift="sub" font-size="9">C</tspan>) / (Q<tspan baseline-shift="sub" font-size="9">W</tspan> + Q*<tspan baseline-shift="sub" font-size="9">W</tspan>)</text>');
+    o.push('<text x="' + 12 + '" y="' + (m.t + 4) + '" transform="rotate(-90 12 ' + (m.t + 4) + ')" text-anchor="end">Relative price of cheese, P<tspan baseline-shift="sub" font-size="9">C</tspan>/P<tspan baseline-shift="sub" font-size="9">W</tspan></text>');
+    // y labels at autarky prices
+    var labelP = function (p, txt, dy) {
+      o.push('<text x="' + (m.l - 6) + '" y="' + (sy(p) + 4 + dy) + '" text-anchor="end">' + f(p) + "</text>");
+      o.push('<text x="' + (m.l + iw - 4) + '" y="' + (sy(p) - 6 + dy) + '" text-anchor="end">' + txt + "</text>");
+    };
+    if (t.kase === "equal") labelP(lo, "Both autarky prices", 0);
+    else {
+      var close = (sy(lo) - sy(hi)) < 16;
+      labelP(lo, (t.homeIsX ? "Home" : "Foreign") + " autarky price", close ? 8 : 0);
+      labelP(hi, (t.homeIsX ? "Foreign" : "Home") + " autarky price", 0);
+    }
+    o.push('<text x="' + m.l + '" y="' + (m.t + ih + 16) + '" text-anchor="middle">0</text>');
+    // RS
+    var rs = t.kase === "equal"
+      ? "M" + sx(0) + "," + sy(lo) + " H" + sx(xMax)
+      : "M" + sx(0) + "," + sy(lo) + " H" + sx(spec) + " V" + sy(hi) + " H" + sx(xMax);
+    o.push('<path class="rs" d="' + rs + '"><title>Relative supply (RS)</title></path>');
+    o.push('<text x="' + (sx(xMax) - 4) + '" y="' + (sy(hi) - 22) + '" text-anchor="end" style="fill:var(--accent);font-weight:600">RS</text>');
+    // RD: x = k / p
+    var pts = [], n = 120, pMin = k / xMax;
+    for (var i = 0; i <= n; i++) {
+      var p = pMin + (yMax - pMin) * Math.pow(i / n, 2);
+      pts.push(sx(k / p).toFixed(1) + "," + sy(p).toFixed(1));
+    }
+    o.push('<polyline class="rd" points="' + pts.join(" ") + '"><title>Relative demand (RD)</title></polyline>');
+    o.push('<text x="' + (sx(k / yMax) + 8) + '" y="' + (m.t + 12) + '" style="fill:var(--rd);font-weight:600">RD</text>');
+    // equilibrium
+    o.push('<circle class="eq" r="6" cx="' + sx(xEq) + '" cy="' + sy(t.p) + '"><title>Free-trade equilibrium: p = ' + f(t.p) +
+      ", relative quantity = " + f(xEq) + "</title></circle>");
+    o.push('<text x="' + (sx(xEq) - 10) + '" y="' + (sy(t.p) + 20) + '" text-anchor="end" style="fill:var(--ink)">p = ' + f(t.p) + "</text>");
+    o.push("</svg>");
+    $("chart").innerHTML = o.join("");
+  }
+
+  ids.forEach(function (id) { $(id).addEventListener("input", render); });
+  ["muC", "muW"].forEach(function (id) {
+    $(id).addEventListener("input", function () { syncMu(id); render(); });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
