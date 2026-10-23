@@ -6,6 +6,7 @@ Users enter the unit labor requirements (a_LC, a_LW, a*_LC, a*_LW), the labor en
 
 - **Autarky** for each country: relative price, labor allocation, production = consumption, wage and utility.
 - **Free trade**: world relative price, production, consumption, exports/imports, wages, the relative wage, and gains from trade.
+- **Production possibility frontiers** for each country, with the autarky bundle, free-trade production, free-trade consumption and the budget line.
 - The world **relative supply / relative demand** diagram, plus a step-by-step derivation for the current numbers.
 
 Wine is the numeraire (P_W = 1).
