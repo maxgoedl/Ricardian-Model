@@ -225,7 +225,7 @@
       row("Wine production", f(aH.QW), f(aF.QW)) +
       row("Cheese consumption", f(aH.C), f(aF.C), "sep") +
       row("Wine consumption", f(aH.W), f(aF.W)) +
-      row("Wage", f(aH.wage), f(aF.wage), "sep") +
+      row("Wage (in wine)", f(aH.wage), f(aF.wage), "sep") +
       row("Utility", f(aH.U), f(aF.U)) +
       "</tbody>";
 
@@ -242,7 +242,7 @@
       row("Wine consumption", f(t.home.W), f(t.foreign.W)) +
       row("Cheese trade", flow(t.home.netExportsC), flow(t.foreign.netExportsC), "sep") +
       row("Wine trade", flow(t.home.netExportsW), flow(t.foreign.netExportsW)) +
-      row("Wage", f(t.home.wage), f(t.foreign.wage), "sep") +
+      row("Wage (in wine)", f(t.home.wage), f(t.foreign.wage), "sep") +
       row("Utility", f(t.home.U), f(t.foreign.U)) +
       row("Gain from trade", pct(gH), pct(gF)) +
       "</tbody>";
